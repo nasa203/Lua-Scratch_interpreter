@@ -40,5 +40,15 @@ private:
     }
 public:
     lexer(string source) : src(source), pos(0) {}
+    vector<Token> tokenize(){
+        vector<Token> tokens;
+        while (peek() != '\0'){
+            char current = peek();
+            if (isspace(current)) advance();
+        }
+
+        tokens.push_back({TOKEN_EOF, ""});
+        return tokens;
+    }
 
 };
