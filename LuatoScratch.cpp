@@ -31,10 +31,14 @@ private:
     size_t pos;
     string src;
     char peek(){
-
+        if (pos >= src.size()) return '\0';
+        return src[pos];
     }
     char advance(){
-        
+        if (pos >= src.length()) return '\0';
+        return src[pos++];
     }
 public:
+    lexer(string source) : src(source), pos(0) {}
+
 };
