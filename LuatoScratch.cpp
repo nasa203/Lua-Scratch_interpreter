@@ -44,11 +44,50 @@ public:
         vector<Token> tokens;
         while (peek() != '\0'){
             char current = peek();
-            if (isspace(current)) advance();
+            if (isspace(current)){
+                advance();
+                continue;
+            }
+            if (current == '='){
+                tokens.push_back({TOKEN_ASSIGN, "="});
+                advance();
+                continue;
+            }
+            if (isdigit(current)){
+                string num;
+                while (isdigit(peek())) num += advance();
+                tokens.push_back({TOKEN_NUMBER, num});
+                continue;
+            }
+            if (isalpha(current) || current == '_'){
+                string str;
+                while (isalnum(peek()) || peek() == '_') str += advance();
+                if (str == "local") tokens.push_back({TOKEN_LOCAL, ""}); 
+                else tokens.push_back({TOKEN_IDENTIFIER, str});
+                continue;
+            }
         }
 
         tokens.push_back({TOKEN_EOF, ""});
         return tokens;
     }
 
+};
+class parser{
+private:
+    size_t index = 0;
+    vector<Token> tokens;
+    Token peek(){
+        if (index >= tokens.size()) return {TOKEN_EOF, ""};
+        return tokens[index];
+    }
+    Token consume(TokenType expect){
+        Token current = peek();
+        if (current.type == expect){
+            return tokens[index++];
+        }
+        throw runtime_error("Expected token, got " + current.value);
+    }
+
+public:
 };
