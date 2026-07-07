@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
+#include "json.hpp"
 using namespace std;
-
-
+using json = nlohmann::json;
 //==========SETUP==========//
 
 
@@ -112,3 +112,6 @@ public:
     }
 };
 
+class generator{
+  string json = "{\n  \"variables\": {\n";  
+};
