@@ -88,17 +88,27 @@ private:
         if (index >= tokens.size()) return {TOKEN_EOF, ""};
         return tokens[index];
     }
-    Token consume(TokenType expect){
+    Token consume(TokenType expect, string tokenasastr){
         Token current = peek();
         if (current.type == expect){
             return tokens[index++];
         }
-        throw runtime_error("Expected token, got " + current.value);
+        throw runtime_error("Expected " + tokenasastr + ", got " + current.value);
     }
 public:
     parser(vector<Token> tokens_list) : tokens(tokens_list), index(0) {}
-    void parse(Sprite& targe_sprite){
-        while (peek().type != TOKEN_EOF)
+    void parse(Sprite& target_sprite){
+        while (peek().type != TOKEN_EOF){
+            if (peek().type == TOKEN_LOCAL){
+                consume(TOKEN_LOCAL, "local");
+                Token name_tok = consume(TOKEN_IDENTIFIER, "variable name");
+                consume(TOKEN_ASSIGN, "equal sign (=)");
+                Token val_tok = peek();
+                if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) index++;
+                else throw runtime_error("Expected a number or string value after '='");
+                target_sprite.local_variables[name_tok.value] = val_tok.value;
+            } else index++;
+        }
     }
 };
 
