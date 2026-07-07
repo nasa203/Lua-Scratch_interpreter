@@ -115,5 +115,30 @@ public:
 };
 
 class generator{
-  string json = "{\n  \"variables\": {\n";  
+public:
+    string generatejson(Sprite& target_sprite){
+        json project;
+        project["meta"]["semver"] = "3.0.0";
+        project["meta"]["vm"] = "0.2.0";    
+        json stage;
+        stage["isStage"] = true;
+        stage["name"] = "Stage";
+        stage["variables"] = json::object();
+        json sprite_obj;
+        sprite_obj["isStage"] = false;
+        sprite_obj["name"] = target_sprite.name;
+        sprite_obj["x"] = target_sprite.x;
+        sprite_obj["y"] = target_sprite.y;
+        sprite_obj["direction"] = target_sprite.direction;
+        sprite_obj["variables"] = json::object();
+        for (const auto& pair : target_sprite.local_variables) {
+            string var_name = pair.first;   
+            string var_value = pair.second; 
+            string unique_id = "var_" + var_name; 
+            sprite_obj["variables"][unique_id] = { var_name, var_value };
+        }
+        project["targets"] = { stage, sprite_obj };       
+        return project.dump(4);
+    }
+
 };
