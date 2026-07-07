@@ -1,5 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
+
+
+//==========SETUP==========//
+
+
 enum TokenType{
     TOKEN_LOCAL,       // "local"
     TOKEN_IDENTIFIER,  // Variable names like "x" or "message"
@@ -25,6 +30,8 @@ public:
     virtual ~Sprite() = default;
     virtual void update() = 0;
 };
+
+//==========PREPROCESSING==========//
 
 class lexer{
 private:
@@ -88,6 +95,10 @@ private:
         }
         throw runtime_error("Expected token, got " + current.value);
     }
-
 public:
+    parser(vector<Token> tokens_list) : tokens(tokens_list), index(0) {}
+    void parse(Sprite& targe_sprite){
+        while (peek().type != TOKEN_EOF)
+    }
 };
+
