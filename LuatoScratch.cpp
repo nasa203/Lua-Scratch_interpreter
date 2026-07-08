@@ -63,13 +63,13 @@ public:
                 continue;
             }
             if (isdigit(current)){
-                string num;
+                string num(1, advance());
                 while (isdigit(peek())) num += advance();
                 tokens.push_back({TOKEN_NUMBER, num});
                 continue;
             }
             if (isalpha(current) || current == '_'){
-                string str;
+                string str(1, advance());
                 while (isalnum(peek()) || peek() == '_') str += advance();
                 if (str == "local") tokens.push_back({TOKEN_LOCAL, ""}); 
                 else tokens.push_back({TOKEN_IDENTIFIER, str});
@@ -104,41 +104,51 @@ public:
             if (peek().type == TOKEN_LOCAL){
                 consume(TOKEN_LOCAL, "local");
                 Token name_tok = consume(TOKEN_IDENTIFIER, "variable name");
-                consume(TOKEN_ASSIGN, "equal sign (=)");
+                consume(TOKEN_ASSIGN, "equals sign (=)");
                 Token val_tok = peek();
                 if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) index++;
                 else throw runtime_error("Expected a number or string value after '='");
                 target_sprite.local_variables[name_tok.value] = val_tok.value;
+            } else if (peek().type == TOKEN_IDENTIFIER){
+                Token name_tok = consume(TOKEN_IDENTIFIER, "variable or token name");
+                consume(TOKEN_ASSIGN, "equals sign(=)");
+                Token val_tok = consume(TOKEN_NUMBER, "numeric value");
+                if (name_tok.value == "x") target_sprite.x = stod(val_tok.value);
+                else if (name_tok.value == "y") target_sprite.y = stod(val_tok.value);
+                else if (name_tok.value == "direction") target_sprite.direction = stod(val_tok.value);
+                else target_sprite.local_variables[name_tok.value] = val_tok.value;
             } else index++;
         }
     }
 };
 
-class generator{
-public:
-    string generatejson(Sprite& target_sprite){
-        json project;
-        project["meta"]["semver"] = "3.0.0";
-        project["meta"]["vm"] = "0.2.0";    
-        json stage;
-        stage["isStage"] = true;
-        stage["name"] = "Stage";
-        stage["variables"] = json::object();
+string generatejson(const vector<Sprite*>& all_sprites) {
+    json project;
+    project["meta"]["semver"] = "3.0.0";
+    project["meta"]["vm"] = "0.2.0";
+    json targets_list = json::array();
+    json stage;
+    stage["isStage"] = true;
+    stage["name"] = "Stage";
+    stage["variables"] = json::object();
+    targets_list.push_back(stage); 
+    for (Sprite* sprite_ptr : all_sprites) {
+        if (sprite_ptr == nullptr) continue;
         json sprite_obj;
         sprite_obj["isStage"] = false;
-        sprite_obj["name"] = target_sprite.name;
-        sprite_obj["x"] = target_sprite.x;
-        sprite_obj["y"] = target_sprite.y;
-        sprite_obj["direction"] = target_sprite.direction;
+        sprite_obj["name"] = sprite_ptr->name;
+        sprite_obj["x"] = sprite_ptr->x;
+        sprite_obj["y"] = sprite_ptr->y;
+        sprite_obj["direction"] = sprite_ptr->direction;
         sprite_obj["variables"] = json::object();
-        for (const auto& pair : target_sprite.local_variables) {
+        for (const auto& pair : sprite_ptr->local_variables) {
             string var_name = pair.first;   
             string var_value = pair.second; 
-            string unique_id = "var_" + var_name; 
+            string unique_id = "var_" + sprite_ptr->name + "_" + var_name; 
             sprite_obj["variables"][unique_id] = { var_name, var_value };
         }
-        project["targets"] = { stage, sprite_obj };       
-        return project.dump(4);
+        targets_list.push_back(sprite_obj);
     }
-
-};
+    project["targets"] = targets_list;       
+    return project.dump(4);
+}
