@@ -113,7 +113,8 @@ public:
                 Token name_tok = consume(TOKEN_IDENTIFIER, "variable or token name");
                 consume(TOKEN_ASSIGN, "equals sign(=)");
                 Token val_tok = peek();
-                if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_IDENTIFIER) index++;
+                if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) index++;
+                if (val_tok.type == TOKEN_STRING && name_tok.value == "x" || name_tok.value == "y" || name_tok.value == "direction") throw runtime_error("strings can't be used for x, y, or direction");
                 else throw runtime_error("Expected number or string after '='");
                 if (name_tok.value == "x") target_sprite.x = stod(val_tok.value);
                 else if (name_tok.value == "y") target_sprite.y = stod(val_tok.value);
