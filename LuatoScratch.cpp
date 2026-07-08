@@ -112,7 +112,9 @@ public:
             } else if (peek().type == TOKEN_IDENTIFIER){
                 Token name_tok = consume(TOKEN_IDENTIFIER, "variable or token name");
                 consume(TOKEN_ASSIGN, "equals sign(=)");
-                Token val_tok = consume(TOKEN_NUMBER, "numeric value");
+                Token val_tok = peek();
+                if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_IDENTIFIER) index++;
+                else throw runtime_error("Expected number or string after '='");
                 if (name_tok.value == "x") target_sprite.x = stod(val_tok.value);
                 else if (name_tok.value == "y") target_sprite.y = stod(val_tok.value);
                 else if (name_tok.value == "direction") target_sprite.direction = stod(val_tok.value);
