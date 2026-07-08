@@ -168,13 +168,6 @@ public:
                         }
                     }
                     consume(TOKEN_RPAREN, "closing parenthesis ')'");
-                    if (name_tok.value == "move_steps") {
-                        if (arguments.empty()) throw runtime_error("move_steps requires a number!");                       
-                        target_sprite.x += stod(arguments[0].value);
-                    } 
-                    else {
-                        throw runtime_error("Unknown function: " + name_tok.value);
-                    }
                 } else throw runtime_error("idk what to put here but either I or you did something wrong");
             } else index++;
         }
