@@ -11,8 +11,11 @@ enum TokenType{
     TOKEN_LOCAL,       // "local"
     TOKEN_IDENTIFIER,  // Variable names like "x" or "message"
     TOKEN_ASSIGN,      // "="
+    TOKEN_DIVIDER,     // ","
     TOKEN_STRING,      // "Hello world"
     TOKEN_NUMBER,      // '10'
+    TOKEN_LPAREN,      // '('
+    TOKEN_RPAREN,      // ')'
     TOKEN_EOF          // End of File
 };
 struct Token{
@@ -62,6 +65,11 @@ public:
                 advance();
                 continue;
             }
+            if (current == ','){
+                tokens.push_back({TOKEN_DIVIDER, ","});
+                advance();
+                continue;
+            }
             if (isdigit(current)){
                 string num(1, advance());
                 while (isdigit(peek())) num += advance();
@@ -73,6 +81,28 @@ public:
                 while (isalnum(peek()) || peek() == '_') str += advance();
                 if (str == "local") tokens.push_back({TOKEN_LOCAL, ""}); 
                 else tokens.push_back({TOKEN_IDENTIFIER, str});
+                continue;
+            }
+            if (current == '"'){
+                advance();
+                string str = "";
+                while (peek() != '"'){
+                    str += advance();
+                    if (peek() == '\0') throw runtime_error("I think you forgot to close a string");
+                }
+                advance();
+                tokens.push_back({TOKEN_STRING, str});
+                continue;
+                
+            }
+            if (current == '('){
+                advance();
+                tokens.push_back({TOKEN_LPAREN, "("});
+                continue;
+            }
+            if (current == ')'){
+                advance();
+                tokens.push_back({TOKEN_RPAREN, ")"});
                 continue;
             }
         }
@@ -111,15 +141,41 @@ public:
                 target_sprite.local_variables[name_tok.value] = val_tok.value;
             } else if (peek().type == TOKEN_IDENTIFIER){
                 Token name_tok = consume(TOKEN_IDENTIFIER, "variable or token name");
-                consume(TOKEN_ASSIGN, "equals sign(=)");
-                Token val_tok = peek();
-                if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) index++;
-                if (val_tok.type == TOKEN_STRING && name_tok.value == "x" || name_tok.value == "y" || name_tok.value == "direction") throw runtime_error("strings can't be used for x, y, or direction");
-                else throw runtime_error("Expected number or string after '='");
-                if (name_tok.value == "x") target_sprite.x = stod(val_tok.value);
-                else if (name_tok.value == "y") target_sprite.y = stod(val_tok.value);
-                else if (name_tok.value == "direction") target_sprite.direction = stod(val_tok.value);
-                else target_sprite.local_variables[name_tok.value] = val_tok.value;
+                if (peek().type == TOKEN_ASSIGN){
+                    consume(TOKEN_ASSIGN, "equals sign(=)");
+                    Token val_tok = peek();
+                    if (val_tok.type == TOKEN_STRING && (name_tok.value == "x" || name_tok.value == "y" || name_tok.value == "direction")) throw runtime_error("strings can't be used for x, y, or direction");
+                    if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) index++;
+                    else throw runtime_error("Expected number or string after '='");
+                    if (name_tok.value == "x") target_sprite.x = stod(val_tok.value);
+                    else if (name_tok.value == "y") target_sprite.y = stod(val_tok.value);
+                    else if (name_tok.value == "direction") target_sprite.direction = stod(val_tok.value);
+                    else target_sprite.local_variables[name_tok.value] = val_tok.value;
+                } else if (peek().type == TOKEN_LPAREN){
+                    consume(TOKEN_LPAREN, "opening parenthesis '('");
+                    vector<Token> arguments;
+                    while (peek().type != TOKEN_RPAREN && peek().type != TOKEN_EOF){
+                        Token val_tok = peek();
+                        if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) {
+                            arguments.push_back(val_tok);
+                            index++;
+                        }
+                        else if (val_tok.type == TOKEN_DIVIDER) {
+                            index++;
+                        } 
+                        else {
+                            throw runtime_error("Unexpected token inside function arguments");
+                        }
+                    }
+                    consume(TOKEN_RPAREN, "closing parenthesis ')'");
+                    if (name_tok.value == "move_steps") {
+                        if (arguments.empty()) throw runtime_error("move_steps requires a number!");                       
+                        target_sprite.x += stod(arguments[0].value);
+                    } 
+                    else {
+                        throw runtime_error("Unknown function: " + name_tok.value);
+                    }
+                } else throw runtime_error("idk what to put here but either I or you did something wrong");
             } else index++;
         }
     }
