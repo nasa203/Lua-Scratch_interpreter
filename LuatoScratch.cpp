@@ -40,6 +40,7 @@ public:
 };
 
 class Block{
+public:
     string id;
     string opcode;
     string next_id = "";
@@ -53,6 +54,80 @@ class lexer{
 private:
     size_t pos;
     string src;
+    char peek(){
+        if (pos >= src.size()) return '\0';
+        return src[pos];
+    }
+    char advance(){
+        if (pos >= src.length()) return '\0';
+        return src[pos++];
+    }
+public:
+    lexer(string source) : src(source), pos(0) {}
+    vector<Token> tokenize(){
+        vector<Token> tokens;
+        while (peek() != '\0'){
+            char current = peek();
+            if (isspace(current)){
+                advance();
+                continue;
+            }
+            if (current == '='){
+                tokens.push_back({TOKEN_ASSIGN, "="});
+                advance();
+                continue;
+            }
+            if (current == ','){
+                tokens.push_back({TOKEN_DIVIDER, ","});
+                advance();
+                continue;
+            }
+            if (isdigit(current)){
+                string num(1, advance());
+                while (isdigit(peek())) num += advance();
+                tokens.push_back({TOKEN_NUMBER, num});
+                continue;
+            }
+            if (isalpha(current) || current == '_'){
+                string str(1, advance());
+                while (isalnum(peek()) || peek() == '_') str += advance();
+                if (str == "local") tokens.push_back({TOKEN_LOCAL, ""}); 
+                else tokens.push_back({TOKEN_IDENTIFIER, str});
+                continue;
+            }
+            if (current == '"'){
+                advance();
+                string str = "";
+                while (peek() != '"'){
+                    str += advance();
+                    if (peek() == '\0') throw runtime_error("I think you forgot to close a string");
+                }
+                advance();
+                tokens.push_back({TOKEN_STRING, str});
+                continue;
+                
+            }
+            if (current == '('){
+                advance();
+                tokens.push_back({TOKEN_LPAREN, "("});
+                continue;
+            }
+            if (current == ')'){
+                advance();
+                tokens.push_back({TOKEN_RPAREN, ")"});
+                continue;
+            }
+        }
+
+        tokens.push_back({TOKEN_EOF, ""});
+        return tokens;
+    }
+
+};
+class parser{
+private:
+    size_t index = 0;
+    vector<Token> tokens;
     size_t blocks = 0;
     vector<string> funny_blocks = {
         "block_of_regret",
@@ -144,80 +219,6 @@ private:
         int random_index = dist(rng);
         return funny_blocks[random_index] + "_" + to_string(blocks);
     }
-    char peek(){
-        if (pos >= src.size()) return '\0';
-        return src[pos];
-    }
-    char advance(){
-        if (pos >= src.length()) return '\0';
-        return src[pos++];
-    }
-public:
-    lexer(string source) : src(source), pos(0) {}
-    vector<Token> tokenize(){
-        vector<Token> tokens;
-        while (peek() != '\0'){
-            char current = peek();
-            if (isspace(current)){
-                advance();
-                continue;
-            }
-            if (current == '='){
-                tokens.push_back({TOKEN_ASSIGN, "="});
-                advance();
-                continue;
-            }
-            if (current == ','){
-                tokens.push_back({TOKEN_DIVIDER, ","});
-                advance();
-                continue;
-            }
-            if (isdigit(current)){
-                string num(1, advance());
-                while (isdigit(peek())) num += advance();
-                tokens.push_back({TOKEN_NUMBER, num});
-                continue;
-            }
-            if (isalpha(current) || current == '_'){
-                string str(1, advance());
-                while (isalnum(peek()) || peek() == '_') str += advance();
-                if (str == "local") tokens.push_back({TOKEN_LOCAL, ""}); 
-                else tokens.push_back({TOKEN_IDENTIFIER, str});
-                continue;
-            }
-            if (current == '"'){
-                advance();
-                string str = "";
-                while (peek() != '"'){
-                    str += advance();
-                    if (peek() == '\0') throw runtime_error("I think you forgot to close a string");
-                }
-                advance();
-                tokens.push_back({TOKEN_STRING, str});
-                continue;
-                
-            }
-            if (current == '('){
-                advance();
-                tokens.push_back({TOKEN_LPAREN, "("});
-                continue;
-            }
-            if (current == ')'){
-                advance();
-                tokens.push_back({TOKEN_RPAREN, ")"});
-                continue;
-            }
-        }
-
-        tokens.push_back({TOKEN_EOF, ""});
-        return tokens;
-    }
-
-};
-class parser{
-private:
-    size_t index = 0;
-    vector<Token> tokens;
     Token peek(){
         if (index >= tokens.size()) return {TOKEN_EOF, ""};
         return tokens[index];
@@ -249,6 +250,10 @@ public:
                     if (val_tok.type == TOKEN_STRING && (name_tok.value == "x" || name_tok.value == "y" || name_tok.value == "direction")) throw runtime_error("strings can't be used for x, y, or direction");
                     if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) index++;
                     else throw runtime_error("Expected number or string after '='");
+
+                    Block new_block;
+                    new_block.id = gen_unique_id();
+                    
                     if (name_tok.value == "x") target_sprite.x = stod(val_tok.value);
                     else if (name_tok.value == "y") target_sprite.y = stod(val_tok.value);
                     else if (name_tok.value == "direction") target_sprite.direction = stod(val_tok.value);
