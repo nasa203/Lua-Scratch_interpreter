@@ -45,7 +45,10 @@ public:
     string opcode;
     string next_id = "";
     string parent_id = "";
-    vector<string> inputs;
+    unordered_map<string, string> inputs;
+    unordered_map<string, string> fields;
+    bool toplevel = false;
+    int x = 0; int y = 0;
 };
 
 //==========PREPROCESSING==========//
@@ -250,10 +253,29 @@ public:
                     if (val_tok.type == TOKEN_STRING && (name_tok.value == "x" || name_tok.value == "y" || name_tok.value == "direction")) throw runtime_error("strings can't be used for x, y, or direction");
                     if (val_tok.type == TOKEN_NUMBER || val_tok.type == TOKEN_STRING) index++;
                     else throw runtime_error("Expected number or string after '='");
-
                     Block new_block;
                     new_block.id = gen_unique_id();
-                    
+                    if (name_tok.value == "x") {
+                        new_block.opcode = "motion_setx";
+                        new_block.inputs["X"] = val_tok.value;
+                    } else if (name_tok.value == "y") {
+                        new_block.opcode = "motion_sety";
+                        new_block.inputs["Y"] = val_tok.value;
+                    } else if (name_tok.value == "direction") {
+                        new_block.opcode = "motion_pointindirection";
+                        new_block.inputs["DIRECTION"] = val_tok.value;
+                    } else {
+                        new_block.opcode = "data_setvariableto";
+                        new_block.inputs["VALUE"] = val_tok.value;
+                        new_block.fields["VARIABLE"] = name_tok.value;                    
+                    }
+                    if (!target_sprite.blocks.empty()) {
+                        target_sprite.blocks.back().next_id = new_block.id;
+                        new_block.parent_id = target_sprite.blocks.back().id;
+                    }
+
+                    target_sprite.blocks.push_back(new_block);
+
                     if (name_tok.value == "x") target_sprite.x = stod(val_tok.value);
                     else if (name_tok.value == "y") target_sprite.y = stod(val_tok.value);
                     else if (name_tok.value == "direction") target_sprite.direction = stod(val_tok.value);
@@ -275,6 +297,8 @@ public:
                         }
                     }
                     consume(TOKEN_RPAREN, "closing parenthesis ')'");
+
+
                 } else throw runtime_error("idk what to put here but either I or you did something wrong");
             } else index++;
         }
