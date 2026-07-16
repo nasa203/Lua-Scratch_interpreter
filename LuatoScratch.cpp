@@ -145,12 +145,12 @@ private:
         "please_dont_delete_this_block",
         "block_i_made_instead_of_sleeping",
         "load_bearing_cardboard_block",
-        "just_another_block"
-        "schrodingers_block"
-        "definitely_a_block"
-        "block_placeholder_final_v2"
-        "unidentified_flying_block"
-        "not_a_cube_just_a_block"
+        "just_another_block",
+        "schrodingers_block",
+        "definitely_a_block",
+        "block_placeholder_final_v2",
+        "unidentified_flying_block",
+        "not_a_cube_just_a_block",
         "block_that_could_have_been_an_email",
         "i_have_no_idea_what_this_block_does",
         "blocky_mcblockface",
@@ -175,7 +175,7 @@ private:
         "block_trying_its_best_okay",
         "it_works_on_my_machine_block",
         "the_chosen_block",
-        "sweet_dreams_are_made_of_blocks"
+        "sweet_dreams_are_made_of_blocks",
         "block_that_refuses_to_elaborate",
         "glorified_cube_id",
         "this_block_requires_coffee",
@@ -190,7 +190,7 @@ private:
         "legacy_block_nobody_dares_touch",
         "block_hiding_from_the_compiler",
         "wild_block_appeared",
-        "block_of_netherite"
+        "block_of_netherite",
         "unsolicited_block_pic",
         "block_running_on_vibes_alone",
         "expensive_way_to_store_nothing_block",
@@ -213,7 +213,7 @@ private:
         "dense_neutron_star_block",
         "slippery_soap_block",
         "shattered_concrete_cinder_block",
-        "block_made_entirely_of_smaller_blocks"
+        "block_made_entirely_of_smaller_blocks",
         "waxed_lightly_weathered_cut_copper_block"
     };
     string gen_unique_id(){
