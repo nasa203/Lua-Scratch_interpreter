@@ -18,6 +18,8 @@ enum TokenType{
     TOKEN_NUMBER,      // '10'
     TOKEN_LPAREN,      // '('
     TOKEN_RPAREN,      // ')'
+    TOKEN_LBRACE,
+    TOKEN_RBRACE,
     TOKEN_EOF          // End of File
 };
 struct Token{
@@ -306,6 +308,10 @@ public:
                             target_sprite.blocks.back().next_id = new_block.id;
                             if (!arguments.empty()) new_block.inputs["STEPS"] = arguments[0].value;
                             else new_block.inputs["STEPS"] = 10;
+                            if (!target_sprite.blocks.empty()) {
+                                new_block.parent_id = target_sprite.blocks.back().id;
+                                target_sprite.blocks.back().next_id = new_block.id;
+                            }
                         }
                         
                     }
