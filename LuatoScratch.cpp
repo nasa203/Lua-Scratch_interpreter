@@ -297,7 +297,19 @@ public:
                         }
                     }
                     consume(TOKEN_RPAREN, "closing parenthesis ')'");
-
+                    Block new_block;
+                    if (name_tok.value == "move_steps"){
+                        new_block.id = gen_unique_id();
+                        new_block.opcode = "motion_movesteps";
+                        if (target_sprite.blocks.size() != 0) {
+                            new_block.parent_id = target_sprite.blocks.back().id;
+                            target_sprite.blocks.back().next_id = new_block.id;
+                            if (!arguments.empty()) new_block.inputs["STEPS"] = arguments[0].value;
+                            else new_block.inputs["STEPS"] = 10;
+                        }
+                        
+                    }
+                    target_sprite.blocks.push_back(new_block);
 
                 } else throw runtime_error("idk what to put here but either I or you did something wrong");
             } else index++;
