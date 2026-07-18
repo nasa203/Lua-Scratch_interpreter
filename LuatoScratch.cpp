@@ -122,6 +122,16 @@ public:
                 tokens.push_back({TOKEN_RPAREN, ")"});
                 continue;
             }
+            if (current == '{'){
+                advance();
+                tokens.push_back({TOKEN_LBRACE, "{"});
+                continue;
+            }
+            if (current == '}'){
+                advance();
+                tokens.push_back({TOKEN_RBRACE, "}"});
+                continue;
+            }
         }
 
         tokens.push_back({TOKEN_EOF, ""});
